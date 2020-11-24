@@ -91,7 +91,7 @@ class DefineAxes(MyWizardPage):
     self.setTitle("Let's define our axes!")
     self.layout = QVBoxLayout()
     self.setLayout(self.layout)
-    self.pilcrow = parent
+    self.designspace = parent.designspace
 
     self.axesWidget = QWidget()
     self.axesLayout = QVBoxLayout()
@@ -104,13 +104,13 @@ class DefineAxes(MyWizardPage):
 
   @pyqtSlot()
   def addRow(self):
-    self.pilcrow.axes.append(AxisDescriptor())
+    self.designspace.axes.append(AxisDescriptor())
     self.setupAxes()
     self.completeChanged.emit()
 
   @pyqtSlot()
   def removeRow(self):
-    del self.pilcrow.axes[self.sender().ix]
+    del self.designspace.axes[self.sender().ix]
     self.setupAxes()
     self.completeChanged.emit()
 
@@ -126,7 +126,6 @@ class DefineAxes(MyWizardPage):
       group.max.setValue(axis.maximum)
       axis.default = axisDefaults["default"]
       group.default.setValue(axis.default)
-      print(axis.serialize())
     elif not axis.tag or len(axis.tag) < 4:
       axis.tag = self.suggestTag(axis)
       group.tag.setText(axis.tag)
@@ -186,7 +185,7 @@ class DefineAxes(MyWizardPage):
 
   def setupAxes(self):
     self._clearLayout(self.axesLayout)
-    for ix,ax in enumerate(self.pilcrow.axes):
+    for ix,ax in enumerate(self.designspace.axes):
       group = QWidget()
       group.axis = ax
       group_layout = QHBoxLayout()
@@ -256,8 +255,8 @@ class DefineAxes(MyWizardPage):
       self.axesLayout.addWidget(group)
 
   def isComplete(self):
-    if len(self.pilcrow.axes) < 1: return False
-    for axis in self.pilcrow.axes:
+    if len(self.designspace.axes) < 1: return False
+    for axis in self.designspace.axes:
       if not axis.name: return False
       if not axis.tag: return False
       if not axis.minimum: return False

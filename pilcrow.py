@@ -4,6 +4,7 @@ from MyWizardPage import MyWizardPage
 from pyqt5_material import apply_stylesheet
 from DefineAxes import DefineAxes
 from DefineSources import DefineSources
+from fontTools.designspaceLib import DesignSpaceDocument
 
 from enum import IntEnum
 class PageId(IntEnum):
@@ -46,8 +47,7 @@ class Pilcrow(QWizard):
   def __init__(self, parent=None):
     super(Pilcrow, self).__init__(parent)
     self.startId = PageId.FIRST_PAGE
-    self.axes = []
-    self.sources = []
+    self.designspace = DesignSpaceDocument()
     self.setPage(PageId.FIRST_PAGE, FirstPage(self))
     self.setPage(PageId.DEFINE_AXES, DefineAxes(self))
     self.setPage(PageId.DEFINE_SOURCES, DefineSources(self))
