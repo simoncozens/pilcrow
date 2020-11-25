@@ -5,3 +5,4 @@ beziers
 fontTools[ufoLib]
 fontmake
 defcon
+qcrash
