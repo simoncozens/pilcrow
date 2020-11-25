@@ -1,0 +1,7 @@
+PyQt5
+pyqt5_material
+matplotlib
+beziers
+fontTools[ufoLib]
+fontmake
+defcon
