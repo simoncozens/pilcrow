@@ -11,8 +11,7 @@ APP = ['pilcrow.py']
 DATA_FILES = []
 OPTIONS = {
 		'iconfile': 'logo.icns',
-    'includes': ["jinja2"],
-    'packages': ["PyQt5", "pyqt5_material", "cffsubr",],
+    'packages': ["PyQt5", "pyqt5_material", "cffsubr","jinja2"],
 'plist': {
         'CFBundleIdentifier': 'uk.co.corvelsoftware.FontBakery',
     }
