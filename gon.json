@@ -1,0 +1,13 @@
+{
+	"notarize": [
+		{
+			"path": "dist/Pilcrow.zip",
+			"bundle_id": "uk.co.corvelsoftware.pilcrow",
+			"staple": false
+		}
+	],
+
+	"apple_id": {
+		"username": "simon@simon-cozens.org"
+	}
+}
