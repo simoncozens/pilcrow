@@ -39,8 +39,8 @@ jobs:
       run: |
         codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --deep --timestamp --entitlements entitlements.plist -o runtime `find dist/Pilcrow.app -name '*.so' -or -name '*.dylib' -or -name '*.framework'` || true
         codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --deep --timestamp --entitlements entitlements.plist -o runtime `find dist/Pilcrow.app -type f | grep 'framework/Versions/5/'` || true
-        codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --deep --timestamp --entitlements entitlements.plist -o runtime dist/Pilcrow.app
-        codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --deep --timestamp --entitlements entitlements.plist -o runtime dist/Pilcrow.app/Contents/MacOS/Pilcrow
+        codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --force --deep --timestamp --entitlements entitlements.plist -o runtime dist/Pilcrow.app
+        codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --force --deep --timestamp --entitlements entitlements.plist -o runtime dist/Pilcrow.app/Contents/MacOS/Pilcrow
         codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --force --options runtime dist/Pilcrow.app/Contents/Resources/lib/python3.8/cffsubr/tx
     - name: Package app
       run: |
