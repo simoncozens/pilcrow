@@ -2,7 +2,9 @@ PyQt5
 pyqt5_material
 matplotlib==3.0.3
 beziers
-fontTools[ufoLib]
+git+git://github.com/fonttools/fonttools.git#egg=fonttools
 fontmake
 defcon
 qcrash
+fs >= 2.2.0, < 3
+munkres
