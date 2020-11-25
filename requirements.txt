@@ -1,5 +1,6 @@
 PyQt5
 pyqt5_material
+jinja2
 matplotlib==3.0.3
 beziers
 git+git://github.com/fonttools/fonttools.git#egg=fonttools
