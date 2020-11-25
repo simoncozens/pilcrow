@@ -6,6 +6,9 @@ from DefineAxes import DefineAxes
 from DefineSources import DefineSources
 from CheckAndSave import CheckAndSave
 from fontTools.designspaceLib import DesignSpaceDocument
+from BuildFont import BuildFont
+from PyQt5.QtCore import Qt, QSettings, QStandardPaths
+import os
 
 from enum import IntEnum
 class PageId(IntEnum):
@@ -16,7 +19,20 @@ class PageId(IntEnum):
   CHECK_AND_SAVE = 4
 
 # create the application and the main window
+
+import qcrash.api as qcrash
+
 app = QApplication(sys.argv)
+app.setApplicationName("Pilcrow")
+app.setOrganizationDomain("corvelsoftware.co.uk")
+# app.setOrganizationName("Corvel Software")
+
+email = qcrash.backends.EmailBackend('simon@simon-cozens.org', 'pilcrow')
+github = qcrash.backends.GithubBackend('simoncozens', 'pilcrow')
+qcrash.install_backend(github)
+qcrash.install_backend(email)
+qcrash.install_except_hook()
+
 apply_stylesheet(app, theme='light_blue.xml')
 
 class FirstPage(MyWizardPage):
@@ -40,10 +56,13 @@ class FirstPage(MyWizardPage):
     self.setLayout(layout)
 
   def openOne(self):
+
     filename = QFileDialog.getOpenFileName(
-      self, "Open designspace", filter="Designspace file (*.designspace)"
+      self, "Open designspace", filter="Designspace file (*.designspace)",
+      directory = self.parent.settings.value("lastdirectory", None)
     )
     if filename and filename[0]:
+      self.parent.settings.setValue('lastdirectory', os.path.dirname(filename[0]))
       self.parent.designspace_file = filename[0]
       self.parent.designspace = DesignSpaceDocument.fromfile(filename[0])
       print(self.parent.designspace)
@@ -69,6 +88,10 @@ class FirstPage(MyWizardPage):
 class Pilcrow(QWizard):
   def __init__(self, parent=None):
     super(Pilcrow, self).__init__(parent)
+    self.settings = QSettings()
+    geometry = self.settings.value('mainwindowgeometry', '')
+    if geometry:
+        self.restoreGeometry(geometry)
     self.startId = PageId.FIRST_PAGE
     self.designspace = DesignSpaceDocument()
     self.designspace_file = None
@@ -76,9 +99,22 @@ class Pilcrow(QWizard):
     self.setPage(PageId.DEFINE_AXES, DefineAxes(self))
     self.setPage(PageId.DEFINE_SOURCES, DefineSources(self))
     self.setPage(PageId.CHECK_AND_SAVE, CheckAndSave(self))
-    self.setPage(PageId.BUILD_FONT, CheckAndSave(self))
+    self.setPage(PageId.BUILD_FONT, BuildFont(self))
     self.setWindowTitle("Pilcrow")
     self.resize(640,480)
+    self.resetButtons()
+    self.button(QWizard.BackButton).clicked.connect(self.resetButtons)
+    self.dirty = False
+
+  def resetButtons(self):
+    self.setButtonLayout([
+    QWizard.Stretch,QWizard.BackButton,QWizard.NextButton,QWizard.CancelButton,
+    ])
+    self.setOption(QWizard.HaveCustomButton1, False)
+
+  def closeEvent(self, event):
+    geometry = self.saveGeometry()
+    self.settings.setValue('mainwindowgeometry', geometry)
 
 
 

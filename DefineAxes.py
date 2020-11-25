@@ -111,12 +111,16 @@ class DefineAxes(MyWizardPage):
     self.designspace.axes.append(AxisDescriptor())
     self.setupAxes()
     self.completeChanged.emit()
+    print("Row added")
+    self.parent.dirty = True
 
   @pyqtSlot()
   def removeRow(self):
     del self.designspace.axes[self.sender().ix]
     self.setupAxes()
     self.completeChanged.emit()
+    print("Row removed")
+    self.parent.dirty = True
 
   def setDefaultValues(self, group, axis):
     name = axis.name.lower().strip()
@@ -142,18 +146,23 @@ class DefineAxes(MyWizardPage):
   def setName(self):
     group = self.sender().parent()
     axis = group.axis
+    print("Name set")
     axis.name = self.sender().text()
     self.setDefaultValues(group, axis)
     self.completeChanged.emit()
+    self.parent.dirty = True
 
   @pyqtSlot()
   def setTag(self):
+    print("Tag set")
     axis = self.sender().parent().axis
     axis.tag = self.sender().text()
     self.completeChanged.emit()
+    self.parent.dirty = True
 
   @pyqtSlot()
   def setMin(self):
+    print("Min set")
     group = self.sender().parent()
     axis = group.axis
     axis.minimum = self.sender().value()
@@ -161,9 +170,11 @@ class DefineAxes(MyWizardPage):
     group.default.setMinimum(axis.minimum)
     print(axis.serialize())
     self.completeChanged.emit()
+    self.parent.dirty = True
 
   @pyqtSlot()
   def setMax(self):
+    print("Max set")
     group = self.sender().parent()
     axis = group.axis
     axis.maximum = self.sender().value()
@@ -171,21 +182,26 @@ class DefineAxes(MyWizardPage):
     group.default.setMaximum(axis.maximum)
     print(axis.serialize())
     self.completeChanged.emit()
+    self.parent.dirty = True
 
   @pyqtSlot()
   def setDefault(self):
+    print("Default set")
     group = self.sender().parent()
     axis = group.axis
     axis.default = self.sender().value()
     print(axis.serialize())
     self.completeChanged.emit()
+    self.parent.dirty = True
 
   @pyqtSlot()
   def setHidden(self):
+    print("Hidden set")
     group = self.sender().parent()
     axis = group.axis
     axis.hidden = self.sender().isChecked()
     self.completeChanged.emit()
+    self.parent.dirty = True
 
   def setupAxes(self):
     self._clearLayout(self.axesLayout)

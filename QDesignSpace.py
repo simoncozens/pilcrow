@@ -44,6 +44,7 @@ class DesignSpaceVisualizer(QWidget):
   def refresh(self):
     self.labels_and_limits()
     if self.draw_glyph:
+      print("Drawing glyph")
       self.designspace.loadSourceFonts(defcon.Font)
       if self.axis_count == 3:
         self.do_three_axis()
@@ -96,6 +97,7 @@ class DesignSpaceVisualizer(QWidget):
       y_axis = self.designspace.axes[1]
 
     for source in self.designspace.sources:
+      print("Source", source)
       at = AffineTransformation.scaling(
           (self.ax.get_xlim()[1]-self.ax.get_xlim()[0])/10000,
           (self.ax.get_ylim()[1]-self.ax.get_ylim()[0])/10000,

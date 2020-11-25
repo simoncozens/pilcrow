@@ -65,7 +65,7 @@ class DefineSources(MyWizardPage):
     self.layout.addWidget(self.splitter)
     # self.layout.addWidget(QLabel("Hello"))
     self.setLayout(self.layout)
-
+    self.splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
     self.left = QWidget()
     self.left_layout = QVBoxLayout()
     self.left.setLayout(self.left_layout)
@@ -107,7 +107,7 @@ class DefineSources(MyWizardPage):
         msg.setInformativeText("\n".join([x.filename for x in missing]))
         msg.setWindowTitle("Missing sources")
         msg.exec_()
-
+      print("Setting right")
       self.right = DesignSpaceVisualizer(self.designspace, draw_glyph="e")
     else:
       self.right = DesignSpaceVisualizer(self.designspace)
@@ -118,6 +118,8 @@ class DefineSources(MyWizardPage):
 
   @pyqtSlot()
   def addSource(self):
+    print("Source added")
+    self.parent.dirty = True
     axis_tags = [ x.tag for x in self.designspace.axes ]
     for file in self.sender().lastFiles[0]:
       source = SourceDescriptor(path=file, filename = os.path.basename(file))
@@ -128,15 +130,20 @@ class DefineSources(MyWizardPage):
         if m:
           source.location[t] = int(m[1])
       self.designspace.sources.append(source)
+    self.initializePage()
     self.right.refresh()
 
   @pyqtSlot()
   def removeRow(self):
+    print("Removed")
     del self.designspace.sources[self.sender().ix]
+    self.parent.dirty = True
     self.initializePage()
 
   @pyqtSlot()
   def locationChanged(self):
+    print("Location changed")
+    self.parent.dirty = True
     loc = self.sender()
     source = loc.source
     if not source.location:
