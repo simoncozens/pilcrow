@@ -12,7 +12,8 @@ class SliderWithValue(QSlider):
         QSlider.paintEvent(self, event)
 
         curr_value = self.value()
-
+        if (self.maximum() - self.minimum()) == 0:
+          return
         ratio = (self.value() - self.minimum()) / (self.maximum() - self.minimum())
         painter = QtGui.QPainter(self)
         painter.setPen(QtGui.QPen(Qt.black))
@@ -91,7 +92,7 @@ class DefineAxes(MyWizardPage):
     self.setTitle("Let's define our axes!")
     self.layout = QVBoxLayout()
     self.setLayout(self.layout)
-    self.designspace = parent.designspace
+    self.parent = parent
 
     self.axesWidget = QWidget()
     self.axesLayout = QVBoxLayout()
@@ -100,6 +101,9 @@ class DefineAxes(MyWizardPage):
     self.addButton = QPushButton("Add another")
     self.addButton.clicked.connect(self.addRow)
     self.layout.addWidget(self.addButton)
+
+  def initializePage(self):
+    self.designspace = self.parent.designspace
     self.setupAxes()
 
   @pyqtSlot()

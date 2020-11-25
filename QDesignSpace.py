@@ -18,19 +18,38 @@ class DesignSpaceVisualizer(QWidget):
   def __init__(self, designspace, parent = None, draw_glyph = False):
     super().__init__(parent)
     self.designspace = designspace
-    self.axis_count = len(designspace.axes)
     self.draw_glyph = draw_glyph
-    self.canvas = FigureCanvas(Figure())
     self.layout = QVBoxLayout(self)
-    self.ax = self.setup_axes()
+    self.figure = Figure()
+    self.canvas = FigureCanvas(self.figure)
     self.layout.addWidget(self.canvas)
+    self.axis_count = len(self.designspace.axes)
+    self.ax = self.setup_axes()
+    self.refresh()
 
+
+  def clearLayout(self):
+    self._clearLayout(self.layout)
+
+  def _clearLayout(self,layout):
+    if layout is not None:
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                self._clearLayout(item.layout())
+
+  def refresh(self):
+    self.labels_and_limits()
     if self.draw_glyph:
-      designspace.loadSourceFonts(defcon.Font)
+      self.designspace.loadSourceFonts(defcon.Font)
       if self.axis_count == 3:
         self.do_three_axis()
       elif 1 <= self.axis_count <= 2:
         self.do_one_or_two_axis()
+    self.canvas.draw()
 
   def glyph_to_paths(self, glyph):
     paths = []
@@ -57,38 +76,44 @@ class DesignSpaceVisualizer(QWidget):
     x_axis, y_axis, z_axis = self.designspace.axes[0:3]
 
     for source in self.designspace.sources:
+      loc = source.location
+      if x_axis.name not in loc or y_axis.name not in loc or z_axis.name not in loc:
+        continue
       at = AffineTransformation.scaling(
           (x_axis.maximum-x_axis.minimum)/10000,
           (z_axis.maximum-z_axis.minimum)/10000,
           )
       a = source.font[self.draw_glyph]
-      loc = source.location
       fn = source.filename.replace("-","-\n")
       z_shift = 1.0/10*(z_axis.maximum-z_axis.minimum)
-      self.ax.text(loc[x_axis.tag], loc[y_axis.tag], loc[z_axis.tag]+z_shift, fn, None, wrap=True, size="x-small")
-      at.translate(Point(loc[x_axis.tag],loc[z_axis.tag]))
-      self.do_draw_glyph(a, at, z_loc=loc[y_axis.tag])
+      self.ax.text(loc[x_axis.name], loc[y_axis.name], loc[z_axis.name]+z_shift, fn, None, wrap=True, size="x-small")
+      at.translate(Point(loc[x_axis.name],loc[z_axis.name]))
+      self.do_draw_glyph(a, at, z_loc=loc[y_axis.name])
 
-  def do_one_or_two_axis(designspace, axis_count = 2):
-    x_axis = designspace.axes[0]
-    if axis_count >= 2:
-      y_axis = designspace.axes[1]
+  def do_one_or_two_axis(self):
+    x_axis = self.designspace.axes[0]
+    if self.axis_count >= 2:
+      y_axis = self.designspace.axes[1]
 
-    for source in designspace.sources:
+    for source in self.designspace.sources:
       at = AffineTransformation.scaling(
-          (ax.get_xlim()[1]-ax.get_xlim()[0])/10000,
-          (ax.get_ylim()[1]-ax.get_ylim()[0])/10000,
+          (self.ax.get_xlim()[1]-self.ax.get_xlim()[0])/10000,
+          (self.ax.get_ylim()[1]-self.ax.get_ylim()[0])/10000,
           )
-      a = source.font[self.draw_glyph]
       loc = source.location
+      if x_axis.name not in loc:
+        continue
+      a = source.font[self.draw_glyph]
       fn = source.filename.replace("-","-\n")
-      y_shift = 1.0/10*(ax.get_ylim()[1]-ax.get_ylim()[0])
-      if axis_count == 2:
-        yloc = loc[y_axis.tag]
+      y_shift = 1.0/10*(self.ax.get_ylim()[1]-self.ax.get_ylim()[0])
+      if self.axis_count == 2:
+        if y_axis.name not in loc:
+          continue
+        yloc = loc[y_axis.name]
       else:
         yloc = 0
-      ax.text(loc[x_axis.tag], yloc+y_shift, fn, None, wrap=True, size="x-small")
-      at.translate(Point(loc[x_axis.tag],yloc))
+      self.ax.text(loc[x_axis.name], yloc+y_shift, fn, None, wrap=True, size="x-small")
+      at.translate(Point(loc[x_axis.name],yloc))
       self.do_draw_glyph(a, at)
 
   def do_draw_glyph(self, glyph, transformation, z_loc=None):
@@ -112,13 +137,15 @@ class DesignSpaceVisualizer(QWidget):
       ax = self.canvas.figure.add_subplot(111, projection='3d')
     else:
       ax = self.canvas.figure.add_subplot(111)
-
     if self.axis_count == 1:
       ax.yaxis.set_visible(False)
       ax.spines["top"].set_visible(False)
       ax.spines["right"].set_visible(False)
       ax.spines["left"].set_visible(False)
+    return ax
 
+  def labels_and_limits(self):
+    self.ax.clear()
     methods = [
       ("set_xlim", "set_xlabel"),
       ("set_ylim", "set_ylabel"),
@@ -127,10 +154,8 @@ class DesignSpaceVisualizer(QWidget):
     for i, axis in enumerate(self.designspace.axes):
       if i >= self.axis_count:
         break
-      getattr(ax,methods[i][0])([axis.minimum, axis.maximum])
-      getattr(ax,methods[i][1])(axis.name)
-
-    return ax
+      getattr(self.ax,methods[i][0])([axis.minimum, axis.maximum])
+      getattr(self.ax,methods[i][1])(axis.name)
 
 
 if __name__ == "__main__":
