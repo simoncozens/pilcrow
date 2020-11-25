@@ -42,6 +42,8 @@ jobs:
         codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --force --deep --timestamp --entitlements entitlements.plist -o runtime dist/Pilcrow.app
         codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --force --deep --timestamp --entitlements entitlements.plist -o runtime dist/Pilcrow.app/Contents/MacOS/Pilcrow
         codesign -s "Developer ID Application: Simon Cozens (GHYRZM4TBD)" -v --force --options runtime dist/Pilcrow.app/Contents/Resources/lib/python3.8/cffsubr/tx
+    - name: Check codesigning
+      run: codesign -vvv --deep --strict dist/Pilcrow.app
     - name: Package app
       run: |
         ditto -c -k --keepParent "dist/Pilcrow.app" dist/Pilcrow.zip
