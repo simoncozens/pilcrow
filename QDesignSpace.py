@@ -95,7 +95,8 @@ class DesignSpaceVisualizer(QWidget):
     x_axis = self.designspace.axes[0]
     if self.axis_count >= 2:
       y_axis = self.designspace.axes[1]
-
+    else:
+      self.figure.subplots_adjust(bottom=0.2)
     for source in self.designspace.sources:
       print("Source", source)
       at = AffineTransformation.scaling(

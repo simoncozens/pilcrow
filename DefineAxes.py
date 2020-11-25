@@ -104,6 +104,14 @@ class DefineAxes(MyWizardPage):
 
   def initializePage(self):
     self.designspace = self.parent.designspace
+    if not self.designspace.axes:
+      self.designspace.axes = [AxisDescriptor(
+        name="weight",
+        tag = self.registeredAxes["weight"]["tag"],
+        minimum = self.registeredAxes["weight"]["min"],
+        maximum = self.registeredAxes["weight"]["max"],
+        default = self.registeredAxes["weight"]["default"]
+        )]
     self.setupAxes()
 
   @pyqtSlot()

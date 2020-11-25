@@ -19,7 +19,6 @@ class DragDropArea(QPushButton):
         self.lastFiles = None
 
     def dragEnterEvent(self, event):
-        print(event.mimeData().urls())
         if event.mimeData().hasUrls() and self.isAllFonts(event.mimeData()):
             self.setStyleSheet("border: 1px solid yellow")
             event.accept()
@@ -48,7 +47,7 @@ class DragDropArea(QPushButton):
 
     def dropEvent(self, event):
         self.setStyleSheet("border: 1px solid green")
-        self.lastFiles = [url.toLocalFile() for url in event.mimeData().urls()]
+        self.lastFiles = [[url.toLocalFile()[:-1] for url in event.mimeData().urls()]]
         event.accept()
         self.gotFiles.emit()
 
@@ -112,6 +111,8 @@ class DefineSources(MyWizardPage):
     else:
       self.right = DesignSpaceVisualizer(self.designspace)
     self.splitter.addWidget(self.right)
+    width = qApp.desktop().availableGeometry(self).width()
+    self.splitter.setSizes([width * 2/3, width * 1/3])
 
     self.setupSources()
     self.completeChanged.emit()
@@ -121,6 +122,7 @@ class DefineSources(MyWizardPage):
     print("Source added")
     self.parent.dirty = True
     axis_tags = [ x.tag for x in self.designspace.axes ]
+    print(self.sender().lastFiles)
     for file in self.sender().lastFiles[0]:
       source = SourceDescriptor(path=file, filename = os.path.basename(file))
       source.location = {}
