@@ -1,6 +1,6 @@
 PyQt5
 pyqt5_material
-matplotlib
+matplotlib==3.0.3
 beziers
 fontTools[ufoLib]
 fontmake
