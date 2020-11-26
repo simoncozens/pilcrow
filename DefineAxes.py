@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from MyWizardPage import MyWizardPage
+from MapEditor import MapEditor
 from fontTools.designspaceLib import AxisDescriptor
 from PyQt5.QtCore import Qt, pyqtSlot, QPoint
 from PyQt5 import QtGui
@@ -211,6 +212,13 @@ class DefineAxes(MyWizardPage):
     self.completeChanged.emit()
     self.parent.dirty = True
 
+  @pyqtSlot()
+  def showMap(self):
+    group = self.sender().parent()
+    axis = group.axis
+    print(group, axis)
+    MapEditor(None, axis).exec_()
+
   def setupAxes(self):
     self._clearLayout(self.axesLayout)
     for ix,ax in enumerate(self.designspace.axes):
@@ -270,13 +278,17 @@ class DefineAxes(MyWizardPage):
         group.hidden.setChecked(True)
       group.hidden.stateChanged.connect(self.setHidden)
 
+      group.map = QPushButton("Map", group)
+      group.map.clicked.connect(self.showMap)
+
       group_layout.addWidget(group.name)
       group_layout.addWidget(group.tag)
       group_layout.addWidget(group.min)
       group_layout.addWidget(group.default)
       group_layout.addWidget(group.max)
       group_layout.addWidget(group.hidden)
-      removeButton = QPushButton("Remove")
+      group_layout.addWidget(group.map)
+      removeButton = QPushButton("x")
       removeButton.ix = ix
       group_layout.addWidget(removeButton)
       removeButton.clicked.connect(self.removeRow)
