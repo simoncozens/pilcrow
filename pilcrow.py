@@ -4,6 +4,7 @@ from MyWizardPage import MyWizardPage
 from pyqt5_material import apply_stylesheet
 from DefineAxes import DefineAxes
 from DefineSources import DefineSources
+from DefineInstances import DefineInstances
 from CheckAndSave import CheckAndSave
 from fontTools.designspaceLib import DesignSpaceDocument
 from BuildFont import BuildFont
@@ -16,7 +17,8 @@ class PageId(IntEnum):
   BUILD_FONT = 10
   DEFINE_AXES = 2
   DEFINE_SOURCES = 3
-  CHECK_AND_SAVE = 4
+  DEFINE_INSTANCES = 4
+  CHECK_AND_SAVE = 5
 
 # create the application and the main window
 
@@ -96,6 +98,7 @@ class Pilcrow(QWizard):
     self.setPage(PageId.FIRST_PAGE, FirstPage(self))
     self.setPage(PageId.DEFINE_AXES, DefineAxes(self))
     self.setPage(PageId.DEFINE_SOURCES, DefineSources(self))
+    self.setPage(PageId.DEFINE_INSTANCES, DefineInstances(self))
     self.setPage(PageId.CHECK_AND_SAVE, CheckAndSave(self))
     self.setPage(PageId.BUILD_FONT, BuildFont(self))
     self.setWindowTitle("Pilcrow")
