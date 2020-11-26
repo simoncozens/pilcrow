@@ -136,7 +136,7 @@ class CheckAndSave(MyWizardPage):
             if not filename:
                 return
             self.parent.designspace_file = filename[0]
-            self.parent.dirty = False
+        self.parent.dirty = False
         self.designspace.write(self.parent.designspace_file)
         self.completeChanged.emit()
 
