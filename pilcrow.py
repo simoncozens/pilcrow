@@ -90,8 +90,6 @@ class Pilcrow(QWizard):
     super(Pilcrow, self).__init__(parent)
     self.settings = QSettings()
     geometry = self.settings.value('mainwindowgeometry', '')
-    if geometry:
-        self.restoreGeometry(geometry)
     self.startId = PageId.FIRST_PAGE
     self.designspace = DesignSpaceDocument()
     self.designspace_file = None
@@ -101,7 +99,10 @@ class Pilcrow(QWizard):
     self.setPage(PageId.CHECK_AND_SAVE, CheckAndSave(self))
     self.setPage(PageId.BUILD_FONT, BuildFont(self))
     self.setWindowTitle("Pilcrow")
-    self.resize(640,480)
+    self.resize(800,480)
+    self.setMinimumSize(800, 480)
+    if geometry:
+        self.restoreGeometry(geometry)
     self.resetButtons()
     self.button(QWizard.BackButton).clicked.connect(self.resetButtons)
     self.dirty = False
