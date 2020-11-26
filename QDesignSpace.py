@@ -75,6 +75,7 @@ class DesignSpaceVisualizer(QWidget):
 
   def do_three_axis(self):
     x_axis, y_axis, z_axis = self.designspace.axes[0:3]
+    styles_are_unique = len(set([s.styleName for s in self.designspace.sources])) == len(self.designspace.sources)
 
     for source in self.designspace.sources:
       loc = source.location
@@ -85,7 +86,12 @@ class DesignSpaceVisualizer(QWidget):
           (z_axis.maximum-z_axis.minimum)/10000,
           )
       a = source.font[self.draw_glyph]
-      fn = source.filename.replace("-","-\n")
+      if styles_are_unique:
+        fn = source.styleName
+      else:
+        fn = source.filename
+      fn = fn.replace("-","-\n")
+      fn = fn.replace(" ","\n")
       z_shift = 1.0/10*(z_axis.maximum-z_axis.minimum)
       self.ax.text(loc[x_axis.name], loc[y_axis.name], loc[z_axis.name]+z_shift, fn, None, wrap=True, size="x-small")
       at.translate(Point(loc[x_axis.name],loc[z_axis.name]))
@@ -93,6 +99,7 @@ class DesignSpaceVisualizer(QWidget):
 
   def do_one_or_two_axis(self):
     x_axis = self.designspace.axes[0]
+    styles_are_unique = len(set([s.styleName for s in self.designspace.sources])) == len(self.designspace.sources)
     if self.axis_count >= 2:
       y_axis = self.designspace.axes[1]
     else:
@@ -107,7 +114,12 @@ class DesignSpaceVisualizer(QWidget):
       if x_axis.name not in loc:
         continue
       a = source.font[self.draw_glyph]
-      fn = source.filename.replace("-","-\n")
+      if styles_are_unique:
+        fn = source.styleName
+      else:
+        fn = source.filename
+      fn = fn.replace("-","-\n")
+      fn = fn.replace(" ","\n")
       y_shift = 1.0/10*(self.ax.get_ylim()[1]-self.ax.get_ylim()[0])
       if self.axis_count == 2:
         if y_axis.name not in loc:
