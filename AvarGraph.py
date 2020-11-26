@@ -51,7 +51,6 @@ class AvarGraph(FigureCanvas):
 
     def toMap(self):
         self.axis.map = [(p.x,p.y) for p in self.list_points]
-        print(self.axis.map)
 
     def connect(self):
         self.cidpress = self.mpl_connect('button_press_event', self.on_press)
@@ -96,6 +95,7 @@ class AvarGraph(FigureCanvas):
         """Update the graph. Necessary, to call after each plot"""
         self.draw()
         self.update()
+        self.toMap()
 
     def setLastSelected(self, pt):
         self.lastSelected = pt

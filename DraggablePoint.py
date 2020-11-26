@@ -51,7 +51,10 @@ class DraggablePoint:
         if DraggablePoint.lock is not None: return
         contains, attrd = self.point.contains(event)
         if not contains: return
-        self.press = (self.point.center), event.xdata, event.ydata
+        self.setup_move(event.xdata, event.ydata)
+
+    def setup_move(self, x, y):
+        self.press = (self.point.center), x, y
         DraggablePoint.lock = self
         self.parent.setLastSelected(self)
 
@@ -92,7 +95,11 @@ class DraggablePoint:
         self.point.center, xpress, ypress = self.press
         dx = event.xdata - xpress
         dy = event.ydata - ypress
-        self.point.center = (self.point.center[0]+dx, self.point.center[1]+dy)
+        self.move_point(self.point.center[0]+dx, self.point.center[1]+dy)
+
+    def move_point(self,x,y):
+
+        self.point.center = (x,y)
 
         canvas = self.point.figure.canvas
         axes = self.point.axes
@@ -103,11 +110,9 @@ class DraggablePoint:
         axes.draw_artist(self.point)
 
         point_number =  self.parent.list_points.index(self)
-        self.x = self.point.center[0]
-        self.y = self.point.center[1]
 
-
-
+        self.x = x
+        self.y = y
 
 
         # We check if the point is A or B

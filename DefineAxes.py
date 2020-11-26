@@ -217,7 +217,7 @@ class DefineAxes(MyWizardPage):
     group = self.sender().parent()
     axis = group.axis
     print(group, axis)
-    MapEditor(None, axis).exec_()
+    MapEditor(self, axis).exec_()
 
   def setupAxes(self):
     self._clearLayout(self.axesLayout)
