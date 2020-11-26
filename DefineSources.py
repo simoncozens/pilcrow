@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QPoint, pyqtSignal
 from PyQt5 import QtGui
 import re, os
 from QDesignSpace import DesignSpaceVisualizer
+import defcon
 
 
 class DragDropArea(QPushButton):
@@ -98,6 +99,7 @@ class DefineSources(MyWizardPage):
           found.append(source)
         else:
           missing.append(source)
+        self.setNames(source)
       self.designspace.sources = found
       if missing:
         msg = QMessageBox()
@@ -117,6 +119,15 @@ class DefineSources(MyWizardPage):
     self.setupSources()
     self.completeChanged.emit()
 
+  def setNames(self, source):
+    if source.familyName and source.styleName:
+      return
+    self.designspace.loadSourceFonts(defcon.Font)
+    if not source.familyName:
+      source.familyName = source.font.info.familyName
+    if not source.styleName:
+      source.styleName = source.font.info.styleName
+
   @pyqtSlot()
   def addSource(self):
     print("Source added")
@@ -132,6 +143,7 @@ class DefineSources(MyWizardPage):
         if m:
           source.location[t] = int(m[1])
       self.designspace.sources.append(source)
+      self.setNames(source)
     self.initializePage()
     self.right.refresh()
 
@@ -203,5 +215,8 @@ class DefineSources(MyWizardPage):
 
 
   def isComplete(self):
-    return len(self.designspace.sources) > 1
+    if not self.designspace.sources:
+      return False
+    return True
+    # Any other checks here?
 
