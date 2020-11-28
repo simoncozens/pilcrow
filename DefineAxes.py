@@ -5,38 +5,23 @@ from fontTools.designspaceLib import AxisDescriptor
 from PyQt5.QtCore import Qt, pyqtSlot, QPoint
 from PyQt5 import QtGui
 
-class SliderWithValue(QSlider):
-    def  __init__(self, orientation, parent=None):
-        super().__init__(orientation, parent)
-        self.setStyleSheet("padding: 40px 0 0 0")
-    def paintEvent(self, event):
-        QSlider.paintEvent(self, event)
+tagToolTip =  """<qt>Four letter tag for this axis. Some might be registered at the OpenType specification. Privately-defined axis tags must begin with an uppercase letter and use only uppercase letters or digits.</qt>"""
+minToolTip = "<qt>The minimum value for this axis in user space.</qt>"
+maxToolTip = "<qt>The maximum value for this axis in user space.</qt>"
+defaultToolTip = """<qt>The default value for this axis, i.e. when a new location is created, this is the value this axis will get in user space.</qt>"""
+hiddenToolTip = """While most axes are intended to be exposed to the user through a \"slider\" or other interface, some axes (such as <i>opsz</i> or parametric axes) are normally hidden. If this checkbox is set, the axis will be exposed to the user."""
+mapToolTip = """<qt>Edits the mapping between userspace and designspace coordinates (avar table).</qt>"""
 
-        curr_value = self.value()
-        if (self.maximum() - self.minimum()) == 0:
-          return
-        ratio = (self.value() - self.minimum()) / (self.maximum() - self.minimum())
-        painter = QtGui.QPainter(self)
-        painter.setPen(QtGui.QPen(Qt.black))
-
-        font_metrics = QtGui.QFontMetrics(self.font())
-        font_width = font_metrics.boundingRect(str(curr_value)).width()
-        font_height = font_metrics.boundingRect(str(curr_value)).height()
-
-        rect = self.geometry()
-        if self.orientation() == Qt.Horizontal:
-            horizontal_x_pos = ratio*rect.width() - font_width/2
-            horizontal_y_pos = rect.height() * 0.5 - font_height
-
-            painter.drawText(QPoint(horizontal_x_pos, horizontal_y_pos), str(curr_value))
-
-        elif self.orientation() == Qt.Vertical:
-            painter.drawText(QPoint(rect.width() / 2.0 - font_width / 2.0, rect.height() - 5), str(round_value))
-        else:
-            pass
-
-        painter.drawRect(rect)
-
+from enum import IntEnum
+class Col(IntEnum):
+  NAME = 0
+  TAG = 1
+  MIN = 2
+  DEFAULT = 3
+  MAX = 4
+  VISIBLE = 5
+  MAP = 6
+  REMOVE = 7
 
 class DefineAxes(MyWizardPage):
   registeredAxes = {
@@ -96,7 +81,7 @@ class DefineAxes(MyWizardPage):
     self.parent = parent
 
     self.axesWidget = QWidget()
-    self.axesLayout = QVBoxLayout()
+    self.axesLayout = QGridLayout()
     self.axesWidget.setLayout(self.axesLayout)
     self.layout.addWidget(self.axesWidget)
     self.addButton = QPushButton("Add another")
@@ -111,7 +96,8 @@ class DefineAxes(MyWizardPage):
         tag = self.registeredAxes["weight"]["tag"],
         minimum = self.registeredAxes["weight"]["min"],
         maximum = self.registeredAxes["weight"]["max"],
-        default = self.registeredAxes["weight"]["default"]
+        default = self.registeredAxes["weight"]["default"],
+        hidden = self.registeredAxes["weight"]["hidden"],
         )]
     self.setupAxes()
 
@@ -131,21 +117,24 @@ class DefineAxes(MyWizardPage):
     print("Row removed")
     self.parent.dirty = True
 
-  def setDefaultValues(self, group, axis):
+  def setDefaultValues(self, ix):
+    axis = self.designspace.axes[ix]
     name = axis.name.lower().strip()
     if name in self.registeredAxes:
       axisDefaults = self.registeredAxes[name]
       axis.tag = axisDefaults["tag"]
-      group.tag.setText(axis.tag)
       axis.minimum = axisDefaults["min"]
-      group.min.setValue(axis.minimum)
       axis.maximum = axisDefaults["max"]
-      group.max.setValue(axis.maximum)
       axis.default = axisDefaults["default"]
-      group.default.setValue(axis.default)
+      axis.hidden = axisDefaults["hidden"]
+      self.axesLayout.itemAtPosition(ix+1,Col.TAG).widget().setText(axis.tag)
+      self.axesLayout.itemAtPosition(ix+1,Col.MIN).widget().setValue(axis.minimum)
+      self.axesLayout.itemAtPosition(ix+1,Col.MAX).widget().setValue(axis.maximum)
+      self.axesLayout.itemAtPosition(ix+1,Col.DEFAULT).widget().setValue(axis.default)
+      self.axesLayout.itemAtPosition(ix+1,Col.VISIBLE).widget().setChecked(not axis.hidden)
     elif not axis.tag or len(axis.tag) < 4:
       axis.tag = self.suggestTag(axis)
-      group.tag.setText(axis.tag)
+      self.axesLayout.itemAtPosition(ix+1,Col.TAG).widget().setText(axis.tag)
 
   def suggestTag(self, axis):
     name = axis.name.upper().replace(" ", '')
@@ -153,18 +142,18 @@ class DefineAxes(MyWizardPage):
 
   @pyqtSlot()
   def setName(self):
-    group = self.sender().parent()
-    axis = group.axis
+    ix = self.sender().ix
+    axis = self.designspace.axes[ix]
     print("Name set")
     axis.name = self.sender().text()
-    self.setDefaultValues(group, axis)
+    self.setDefaultValues(ix)
     self.completeChanged.emit()
     self.parent.dirty = True
 
   @pyqtSlot()
   def setTag(self):
     print("Tag set")
-    axis = self.sender().parent().axis
+    axis = self.designspace.axes[self.sender().ix]
     axis.tag = self.sender().text()
     self.completeChanged.emit()
     self.parent.dirty = True
@@ -172,11 +161,11 @@ class DefineAxes(MyWizardPage):
   @pyqtSlot()
   def setMin(self):
     print("Min set")
-    group = self.sender().parent()
-    axis = group.axis
-    axis.minimum = self.sender().value()
-    group.max.setMinimum(axis.minimum)
-    group.default.setMinimum(axis.minimum)
+    ix = self.sender().ix
+    axis = self.designspace.axes[ix]
+    axis.minimum = float(self.sender().value())
+    self.axesLayout.itemAtPosition(ix+1,Col.MAX).widget().setMinimum(axis.minimum)
+    self.axesLayout.itemAtPosition(ix+1,Col.DEFAULT).widget().setMinimum(axis.minimum)
     print(axis.serialize())
     self.completeChanged.emit()
     self.parent.dirty = True
@@ -184,11 +173,11 @@ class DefineAxes(MyWizardPage):
   @pyqtSlot()
   def setMax(self):
     print("Max set")
-    group = self.sender().parent()
-    axis = group.axis
-    axis.maximum = self.sender().value()
-    group.min.setMaximum(axis.maximum)
-    group.default.setMaximum(axis.maximum)
+    ix = self.sender().ix
+    axis = self.designspace.axes[ix]
+    axis.maximum = float(self.sender().value())
+    self.axesLayout.itemAtPosition(ix+1,Col.MIN).widget().setMinimum(axis.minimum)
+    self.axesLayout.itemAtPosition(ix+1,Col.DEFAULT).widget().setMinimum(axis.minimum)
     print(axis.serialize())
     self.completeChanged.emit()
     self.parent.dirty = True
@@ -196,9 +185,8 @@ class DefineAxes(MyWizardPage):
   @pyqtSlot()
   def setDefault(self):
     print("Default set")
-    group = self.sender().parent()
-    axis = group.axis
-    axis.default = self.sender().value()
+    axis = self.designspace.axes[self.sender().ix]
+    axis.default = float(self.sender().value())
     print(axis.serialize())
     self.completeChanged.emit()
     self.parent.dirty = True
@@ -206,93 +194,112 @@ class DefineAxes(MyWizardPage):
   @pyqtSlot()
   def setHidden(self):
     print("Hidden set")
-    group = self.sender().parent()
-    axis = group.axis
-    axis.hidden = self.sender().isChecked()
+    axis = self.designspace.axes[self.sender().ix]
+    axis.hidden = not self.sender().isChecked()
     self.completeChanged.emit()
     self.parent.dirty = True
 
   @pyqtSlot()
   def showMap(self):
-    group = self.sender().parent()
-    axis = group.axis
-    print(group, axis)
+    axis = self.designspace.axes[self.sender().ix]
     MapEditor(self, axis).exec_()
+
+  def _createFixedWidthLabel(self, text, width, tooltip=None):
+    w = QLabel(text)
+    w.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+    w.setMaximumWidth(width)
+    if tooltip:
+      w.setToolTip(tooltip)
+    return w
 
   def setupAxes(self):
     self._clearLayout(self.axesLayout)
+    self.axesLayout.addWidget(QLabel("Axis name"), 0,Col.NAME)
+    self.axesLayout.addWidget(self._createFixedWidthLabel("Tag", 75,tagToolTip),0,Col.TAG)
+    self.axesLayout.addWidget(self._createFixedWidthLabel("Min", 85, minToolTip),0,Col.MIN)
+    self.axesLayout.addWidget(self._createFixedWidthLabel("Default", 85, defaultToolTip),0,Col.DEFAULT)
+    self.axesLayout.addWidget(self._createFixedWidthLabel("Max", 85, maxToolTip),0,Col.MAX)
+    self.axesLayout.addWidget(self._createFixedWidthLabel("Show in UI?", 85, hiddenToolTip),0,Col.VISIBLE)
+
     for ix,ax in enumerate(self.designspace.axes):
-      group = QWidget()
-      group.axis = ax
-      group_layout = QHBoxLayout()
-      group.setLayout(group_layout)
-
-      group.name = QLineEdit(group)
-      group.name.setPlaceholderText("Name")
+      name = QLineEdit()
+      name.ix = ix
+      name.setPlaceholderText("Name")
       if ax.name:
-        group.name.setText(ax.name)
-      group.name.textChanged.connect(self.setName)
+        name.setText(ax.name)
+      name.textChanged.connect(self.setName)
+      self.axesLayout.addWidget(name,ix+1,Col.NAME)
 
-      group.tag = QLineEdit(group)
-      group.tag.setPlaceholderText("Tag")
-      group.tag.setMaxLength(4)
-      group.tag.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-      group.tag.setMaximumWidth(75)
+      tag = QLineEdit()
+      tag.ix = ix
+      tag.setPlaceholderText("Tag")
+      tag.setToolTip(tagToolTip)
+      # validator XXX
+      tag.setMaxLength(4)
+      tag.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+      tag.setMaximumWidth(75)
       if ax.tag:
-        group.tag.setText(ax.tag)
-      group.tag.textChanged.connect(self.setTag)
+        tag.setText(ax.tag)
+      tag.textChanged.connect(self.setTag)
+      self.axesLayout.addWidget(tag,ix+1,Col.TAG)
 
-      group.min = QSpinBox(group)
-      group.min.setMinimum(0)
-      group.min.setMaximum(1000)
-      group.min.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-      group.min.setMaximumWidth(85)
+      minBox = QSpinBox()
+      minBox.ix = ix
+      minBox.setToolTip(minToolTip)
+      minBox.setMinimum(0)
+      minBox.setMaximum(1000)
+      # XXX Validator
       if ax.minimum is not None:
-        group.min.setValue(ax.minimum)
-      group.min.valueChanged.connect(self.setMin)
+        minBox.setValue(ax.minimum)
+      minBox.valueChanged.connect(self.setMin)
+      self.axesLayout.addWidget(minBox,ix+1,Col.MIN)
 
-      group.default = SliderWithValue(Qt.Horizontal, group)
-      if ax.minimum is not None:
-        group.default.setMinimum(ax.minimum)
-      else:
-        group.default.setMinimum(0)
-      if ax.maximum is not None:
-        group.default.setMaximum(ax.maximum)
-      else:
-        group.default.setMaximum(1000)
+      default = QSpinBox()
+      default.ix = ix
+      default.setToolTip(defaultToolTip)
+      default.setMinimum(ax.minimum)
+      default.setMaximum(ax.maximum)
       if ax.default is not None:
-        group.default.setValue(ax.default)
-      group.default.valueChanged.connect(self.setDefault)
+        default.setValue(ax.default)
+      default.valueChanged.connect(self.setDefault)
+      self.axesLayout.addWidget(default,ix+1,Col.DEFAULT)
 
-      group.max = QSpinBox(group)
-      group.max.setMinimum(0)
-      group.max.setMaximum(1000)
-      group.max.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-      group.max.setMaximumWidth(85)
+      maxBox = QSpinBox()
+      maxBox.ix = ix
+      maxBox.setToolTip(maxToolTip)
+      maxBox.setMinimum(ax.minimum)
+      maxBox.setMaximum(ax.maximum)
+      maxBox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+      maxBox.setMaximumWidth(85)
       if ax.maximum is not None:
-        group.max.setValue(ax.maximum)
-      group.max.valueChanged.connect(self.setMax)
+        maxBox.setValue(ax.maximum)
+      maxBox.valueChanged.connect(self.setMax)
+      self.axesLayout.addWidget(maxBox,ix+1,Col.MAX)
 
-      group.hidden = QCheckBox("Hidden", group)
-      if ax.hidden:
-        group.hidden.setChecked(True)
-      group.hidden.stateChanged.connect(self.setHidden)
+      visibleInUI = QCheckBox("")
+      visibleInUI.ix = ix
+      visibleInUI.setToolTip(hiddenToolTip)
+      visibleInUI.setMaximumWidth(85)
+      visibleInUI.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-      group.map = QPushButton("Map", group)
-      group.map.clicked.connect(self.showMap)
+      if not ax.hidden:
+        visibleInUI.setChecked(True)
+      else:
+        visibleInUI.setChecked(False)
+      visibleInUI.stateChanged.connect(self.setHidden)
+      self.axesLayout.addWidget(visibleInUI,ix+1,Col.VISIBLE)
 
-      group_layout.addWidget(group.name)
-      group_layout.addWidget(group.tag)
-      group_layout.addWidget(group.min)
-      group_layout.addWidget(group.default)
-      group_layout.addWidget(group.max)
-      group_layout.addWidget(group.hidden)
-      group_layout.addWidget(group.map)
+      mapButton = QPushButton("Map")
+      mapButton.ix = ix
+      mapButton.setToolTip(mapToolTip)
+      mapButton.clicked.connect(self.showMap)
+      self.axesLayout.addWidget(mapButton,ix+1,Col.MAP)
+
       removeButton = QPushButton("x")
+      removeButton.setToolTip("Removes the axis from the designspace")
       removeButton.ix = ix
-      group_layout.addWidget(removeButton)
       removeButton.clicked.connect(self.removeRow)
-      self.axesLayout.addWidget(group)
+      self.axesLayout.addWidget(removeButton,ix+1,Col.REMOVE)
 
   def isComplete(self):
     if len(self.designspace.axes) < 1: return False
