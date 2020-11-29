@@ -56,6 +56,7 @@ class CheckAndSave(MyWizardPage):
         self.layout.addWidget(QLabel("Checking for compatibility errors..."))
         spinner = QtWaitingSpinner(self)
         self.layout.addWidget(spinner)
+        self.saved = QLabel("Saved")
 
         self.worker = TestRunner(glyphsets, names)
         self.worker_thread = QThread()
@@ -84,7 +85,10 @@ class CheckAndSave(MyWizardPage):
         self.problems = problems
         self.status = self.cleanProblems()
         if not self.problems:
-            self.layout.addWidget(QLabel("Everything looks good! Let's save it now..."))
+            labeltext = "Everything looks good! "
+            if self.parent.dirty:
+              labeltext = labeltext + "Let's save it now..."
+            self.layout.addWidget(QLabel(labeltext))
             self.parent.button(QWizard.CustomButton1).setEnabled(True)
 
         else:
@@ -120,8 +124,10 @@ class CheckAndSave(MyWizardPage):
             self.sourcesScroll.setWidgetResizable(True)
             self.layout.addWidget(self.sourcesScroll)
 
-            if self.status == Status.WARN:
-                self.parent.button(QWizard.CustomButton1).setEnabled(True)
+        self.layout.addWidget(self.saved)
+        if self.parent.dirty:
+          self.saved.hide()
+
         self.completeChanged.emit()
 
     def saveDesignspace(self):
@@ -138,11 +144,19 @@ class CheckAndSave(MyWizardPage):
                 return
             self.parent.designspace_file = filename[0]
         self.parent.dirty = False
+        self.saved.show()
         self.designspace.write(self.parent.designspace_file)
         self.completeChanged.emit()
 
     def isComplete(self):
         print(self.status, self.parent.dirty)
+        if self.parent.dirty:
+          self.saved.hide()
+        else:
+          self.parent.button(QWizard.CustomButton1).setEnabled(False)
+        if self.parent.dirty and not (self.status == Status.ERROR):
+          self.parent.button(QWizard.CustomButton1).setEnabled(True)
+
         return (
             self.status == Status.OK or self.status == Status.WARN
         ) and not self.parent.dirty
