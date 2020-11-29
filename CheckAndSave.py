@@ -148,6 +148,8 @@ class CheckAndSave(MyWizardPage):
 
     def cleanProblems(self):
         status = Status.OK
+        if not self.problems:
+          return status
         keys = list(self.problems.keys())
         for (
             k
