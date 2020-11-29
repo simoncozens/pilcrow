@@ -5,6 +5,16 @@ from fontmake.font_project import FontProject
 from waitingspinnerwidget import QtWaitingSpinner
 import os, sys, subprocess
 from uuid import uuid1
+import os.path
+
+has_mutatormath = True
+has_ttfautohint = True
+try:
+  import mutatorMath
+except Exception as e:
+  has_mutatormath = False
+if os.system("ttfautohint -h"):
+  has_ttfautohint = False
 
 
 def open_file(filename):
@@ -187,6 +197,10 @@ class BuildFont(MyWizardPage):
         self.general_options.setLayout(self.general_options_layout)
 
         self.autohint = QCheckBox("Run ttfautohint", checked=True)
+        if not has_ttfautohint:
+          self.autohint.setEnabled(False)
+          self.autohint.setChecked(False)
+
         self.general_options_layout.addWidget(self.autohint)
 
         self.production_names = QCheckBox("Use production names", checked=True)
@@ -229,6 +243,9 @@ class BuildFont(MyWizardPage):
         self.mutator_math = QCheckBox(
             "Use MutatorMath (supports extrapolation)", checked=True
         )
+        if not has_mutatormath:
+          self.mutator_math.setEnabled(False)
+          self.mutator_math.setChecked(False)
         self.instance_options_layout.addWidget(self.mutator_math)
 
         self.round_instances = QCheckBox(
