@@ -20,13 +20,7 @@ class AvarGraph(FigureCanvas):
         self.axis = axis
 
         self.axes = self.fig.add_subplot(111)
-        self.axes.grid(True)
         self.lastSelected = None
-
-        self.axes.set_xlim(self.axis.minimum, self.axis.maximum)
-        self.axes.set_ylim(self.axis.minimum, self.axis.maximum)
-        self.axes.set_xlabel("Design space")
-        self.axes.set_ylabel("User space")
 
         if not axis.map:
           self.axis.map = [(axis.minimum, axis.minimum), (axis.maximum, axis.maximum)]
@@ -42,15 +36,19 @@ class AvarGraph(FigureCanvas):
 
         self.connect()
         self.show()
-        del(self.list_points[:])
-        self.list_points = [DraggablePoint(self, axis.map[0][0], axis.map[0][1], 5)]
-        for x,y in self.axis.map[1:]:
-          self.list_points.append(DraggablePoint(self, x, y, 5, prev=self.list_points[-1]))
+        self.fromMap()
         self.updateFigure()
 
+    def fromMap(self):
+        self.axes.clear()
+        self.setLimits()
+        del(self.list_points[:])
+        self.list_points = [DraggablePoint(self, self.axis.map[0][1], self.axis.map[0][0], 5)]
+        for y,x in self.axis.map[1:]:
+          self.list_points.append(DraggablePoint(self, x, y, 5, prev=self.list_points[-1]))
 
     def toMap(self):
-        self.axis.map = [(p.x,p.y) for p in self.list_points]
+        self.axis.map = [(p.y,p.x) for p in self.list_points]
 
     def connect(self):
         self.cidpress = self.mpl_connect('button_press_event', self.on_press)
@@ -91,11 +89,21 @@ class AvarGraph(FigureCanvas):
 
         self.updateFigure()
 
+    def setLimits(self):
+        # X axis = designspace = element 1 of map list
+        self.axes.grid(True)
+        self.axes.set_xlabel("Design space")
+        self.axes.set_ylabel("User space")
+        self.axes.set_ylim(self.axis.minimum, self.axis.maximum)
+        dsCoords = [ x[1] for x in self.axis.map ]
+        self.axes.set_xlim(min(dsCoords), max(dsCoords))
+
     def updateFigure(self):
         """Update the graph. Necessary, to call after each plot"""
+        self.toMap()
+        self.setLimits()
         self.draw()
         self.update()
-        self.toMap()
 
     def setLastSelected(self, pt):
         self.lastSelected = pt

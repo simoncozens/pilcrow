@@ -31,7 +31,6 @@ class DraggablePoint:
     def setLine(self):
         line_x = [self.prev.x, self.x]
         line_y = [self.prev.y, self.y]
-        print("Drawing line",line_x, line_y)
         self.line = Line2D(line_x, line_y, color='r', alpha=0.5, clip_on=False)
         self.parent.fig.axes[0].add_line(self.line)
 
