@@ -213,7 +213,7 @@ class DefineSources(MyWizardPage):
 
 
   def isComplete(self):
-    if not self.designspace.sources:
+    if len(self.designspace.sources) < 2:
       return False
     return True
     # Any other checks here?
