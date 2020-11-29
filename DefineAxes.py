@@ -167,6 +167,8 @@ class DefineAxes(MyWizardPage):
       axis.hidden = axisDefaults["hidden"]
       self.getWidget(ix, Col.MIN).setValue(axis.minimum)
       self.getWidget(ix, Col.MAX).setValue(axis.maximum)
+      self.getWidget(ix, Col.DEFAULT).setMinimum(axis.minimum)
+      self.getWidget(ix, Col.DEFAULT).setMaximum(axis.maximum)
       self.getWidget(ix, Col.DEFAULT).setValue(axis.default)
       self.getWidget(ix, Col.VISIBLE).setChecked(not axis.hidden)
 
@@ -307,10 +309,10 @@ class DefineAxes(MyWizardPage):
       default = QSpinBox()
       default.ix = ix
       default.setToolTip(defaultToolTip)
-      # if ax.minimum is not None:
-      #   default.setMinimum(ax.minimum)
-      # if ax.maximum is not None:
-      #   default.setMaximum(ax.maximum)
+      if ax.minimum is not None:
+        default.setMinimum(ax.minimum)
+      if ax.maximum is not None:
+        default.setMaximum(ax.maximum)
       if ax.default is not None:
         default.setValue(ax.default)
       default.valueChanged.connect(self.setDefault)
@@ -355,6 +357,8 @@ class DefineAxes(MyWizardPage):
     firstError = None
     # Validate whole form
     for ix,axis in enumerate(self.designspace.axes):
+      if not axis.map:
+        axis.map = [(axis.minimum, axis.minimum), (axis.maximum, axis.maximum)]
 
       nameW = self.getWidget(ix,Col.NAME)
       if not axis.name:
