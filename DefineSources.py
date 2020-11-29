@@ -14,18 +14,18 @@ class DragDropArea(QPushButton):
         super(DragDropArea, self).__init__()
         self.parent = parent
         self.setText("Drop a UFO file or click to open")
-        self.setStyleSheet("border: 1px solid green")
+        self.setStyleSheet("background-color: #C8E6C9")
         self.setAcceptDrops(True)
         self.clicked.connect(self.buttonClicked)
         self.lastFiles = None
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls() and self.isAllFonts(event.mimeData()):
-            self.setStyleSheet("border: 1px solid yellow")
+            self.setStyleSheet("background-color: #FFF9C4")
             event.accept()
         else:
-            self.setStyleSheet("border: 1px solid red ")
-            event.ignore()
+            self.setStyleSheet("background-color: #B00020 ")
+            event.accept()
 
     def buttonClicked(self):
         ufo = QFileDialog.getOpenFileNames(
@@ -44,10 +44,12 @@ class DragDropArea(QPushButton):
         return True
 
     def dragLeaveEvent(self, event):
-        self.setStyleSheet("border: 1px solid green")
+        self.setStyleSheet("background-color: #C8E6C9")
 
     def dropEvent(self, event):
-        self.setStyleSheet("border: 1px solid green")
+        self.setStyleSheet("background-color: #C8E6C9")
+        if not self.isAllFonts(event.mimeData()):
+          return
         self.lastFiles = [[url.toLocalFile()[:-1] for url in event.mimeData().urls()]]
         event.accept()
         self.gotFiles.emit()
@@ -110,7 +112,6 @@ class DefineSources(MyWizardPage):
         msg.setInformativeText("\n".join([x.filename for x in missing]))
         msg.setWindowTitle("Missing sources")
         msg.exec_()
-      print("Setting right")
       self.right = DesignSpaceVisualizer(self.designspace, draw_glyph="e")
     else:
       self.right = DesignSpaceVisualizer(self.designspace)
@@ -132,10 +133,8 @@ class DefineSources(MyWizardPage):
 
   @pyqtSlot()
   def addSource(self):
-    print("Source added")
     self.parent.dirty = True
     axis_tags = [ x.tag for x in self.designspace.axes ]
-    print(self.sender().lastFiles)
     for file in self.sender().lastFiles[0]:
       source = SourceDescriptor(path=file, filename = os.path.basename(file))
       source.location = {}
@@ -151,21 +150,18 @@ class DefineSources(MyWizardPage):
 
   @pyqtSlot()
   def removeRow(self):
-    print("Removed")
     del self.designspace.sources[self.sender().ix]
     self.parent.dirty = True
     self.initializePage()
 
   @pyqtSlot()
   def locationChanged(self):
-    print("Location changed")
     self.parent.dirty = True
     loc = self.sender()
     source = loc.source
     if not source.location:
       source.location = {}
     source.location[loc.name] = loc.value()
-    print(self.designspace.tostring())
     self.right.refresh()
 
   def setupSources(self):
