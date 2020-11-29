@@ -4,6 +4,12 @@ from copy import deepcopy
 from PyQt5.QtCore import Qt
 
 
+helpText = """Adjust the mapping between userspace and designspace.
+Double-click on the graph to create a new mapping point. Click and
+drag to reposition a point, or click and use the boxes on the right
+to alter a point's coordinates manually. Double-click on a point to
+remove it."""
+
 class MapEditor(QDialog):
     def __init__(self, parent, axis):
         super().__init__(parent)
@@ -12,6 +18,9 @@ class MapEditor(QDialog):
         self.axis = deepcopy(axis)
         self.layout = QVBoxLayout()
 
+        self.help = QLabel("<qt>%s</qt>" % helpText)
+        self.help.setWordWrap(True)
+        self.layout.addWidget(self.help)
         self.top = QWidget()
         self.top_layout = QHBoxLayout()
         self.top.setLayout(self.top_layout)
