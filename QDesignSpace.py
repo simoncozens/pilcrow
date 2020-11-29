@@ -44,7 +44,6 @@ class DesignSpaceVisualizer(QWidget):
   def refresh(self):
     self.labels_and_limits()
     if self.draw_glyph:
-      print("Drawing glyph")
       self.designspace.loadSourceFonts(defcon.Font)
       if self.axis_count == 3:
         self.do_three_axis()
@@ -105,7 +104,6 @@ class DesignSpaceVisualizer(QWidget):
     else:
       self.figure.subplots_adjust(bottom=0.2)
     for source in self.designspace.sources:
-      print("Source", source)
       at = AffineTransformation.scaling(
           (self.ax.get_xlim()[1]-self.ax.get_xlim()[0])/10000,
           (self.ax.get_ylim()[1]-self.ax.get_ylim()[0])/10000,
@@ -124,11 +122,13 @@ class DesignSpaceVisualizer(QWidget):
       if self.axis_count == 2:
         if y_axis.name not in loc:
           continue
-        yloc = loc[y_axis.name]
+        yloc = y_axis.map_backward(loc[y_axis.name])
       else:
         yloc = 0
-      self.ax.text(loc[x_axis.name], yloc+y_shift, fn, None, wrap=True, size="x-small")
-      at.translate(Point(loc[x_axis.name],yloc))
+      xloc = x_axis.map_backward(loc[x_axis.name])
+      # print(fn, xloc, yloc)
+      self.ax.text(xloc, yloc+y_shift, fn, None, wrap=True, size="x-small")
+      at.translate(Point(xloc,yloc))
       self.do_draw_glyph(a, at)
 
   def do_draw_glyph(self, glyph, transformation, z_loc=None):
@@ -137,8 +137,9 @@ class DesignSpaceVisualizer(QWidget):
       for p in paths[1:]:
         bounds.extend(p.bounds())
       width = bounds.width/2
+      height = bounds.height/2
       for p in paths:
-        seg2 = [ x.translated(Point(-width/2,0)).transformed(transformation) for x in p.asSegments()]
+        seg2 = [ x.translated(Point(-width/2,-height/2)).transformed(transformation) for x in p.asSegments()]
         p.activeRepresentation = SegmentRepresentation(p, seg2)
         mp = p.asMatplot()
 

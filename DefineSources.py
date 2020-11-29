@@ -144,7 +144,7 @@ class DefineSources(MyWizardPage):
       for t in axis_tags:
         m = re.search("-"+t+r"-?(\d+)", source.filename)
         if m:
-          source.location[t] = int(m[1])
+          source.location[t] = int(m[1]) # Possibly map here?
       self.designspace.sources.append(source)
       self.setNames(source)
     self.initializePage()
@@ -173,7 +173,9 @@ class DefineSources(MyWizardPage):
     headergroup.setLayout(headergroup_layout)
     headergroup_layout.addWidget(QLabel("Source"))
     for ax in self.designspace.axes:
-      headergroup_layout.addWidget(QLabel(ax.name))
+      axlabel = QLabel(ax.name)
+      axlabel.setToolTip("<i>%s</i> value for this source in designspace coordinates" % ax.tag)
+      headergroup_layout.addWidget(axlabel)
     headergroup_layout.addWidget(QLabel("Remove"))
     self.sourcesLayout.addWidget(headergroup)
 
@@ -198,8 +200,10 @@ class DefineSources(MyWizardPage):
         loc.tag = ax.tag
         loc.name = ax.name
         loc.source = source
-        loc.setMinimum(ax.minimum)
-        loc.setMaximum(ax.maximum)
+        loc.setToolTip("<i>%s</i> value for this source in designspace coordinates" % ax.tag)
+        dsCoords = [ x[1] for x in ax.map ]
+        loc.setMinimum(min(dsCoords))
+        loc.setMaximum(max(dsCoords))
         if name in source.location:
           loc.setValue(source.location[name])
         else:
