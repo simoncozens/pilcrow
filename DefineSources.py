@@ -137,6 +137,8 @@ class DefineSources(MyWizardPage):
     axis_tags = [ x.tag for x in self.designspace.axes ]
     for file in self.sender().lastFiles[0]:
       source = SourceDescriptor(path=file, filename = os.path.basename(file))
+      if source.filename in [x.filename for x in self.designspace.sources]:
+        continue
       source.location = {}
 
       for t in axis_tags:
