@@ -112,6 +112,7 @@ class DefineSources(MyWizardPage):
         msg.setInformativeText("\n".join([x.filename for x in missing]))
         msg.setWindowTitle("Missing sources")
         msg.exec_()
+        self.parent.dirty = True
       self.right = DesignSpaceVisualizer(self.designspace, draw_glyph="e")
     else:
       self.right = DesignSpaceVisualizer(self.designspace)
