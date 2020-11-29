@@ -80,6 +80,7 @@ class CheckAndSave(MyWizardPage):
 
     def show_results(self, problems):
         self.clearLayout()
+        self.worker_thread.quit()
         self.problems = problems
         self.status = self.cleanProblems()
         if not self.problems:
