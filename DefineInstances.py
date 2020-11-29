@@ -156,8 +156,8 @@ class DefineInstances(MyWizardPage):
     if not instance.location:
       instance.location = {}
     instance.location[loc.name] = loc.value()
-    print(self.designspace.tostring())
     self.right.refresh()
+    self.completeChanged.emit()
 
   @pyqtSlot()
   def setNames(self):
@@ -177,11 +177,13 @@ class DefineInstances(MyWizardPage):
       headergroup_layout.addWidget(QLabel(ax.name))
     headergroup_layout.addWidget(QLabel("Remove"))
     self.instancesLayout.addWidget(headergroup)
+    self.groups = []
 
     for ix,instance in enumerate(self.designspace.instances):
       if not instance.location:
         instance.location = {}
       group = QWidget()
+      self.groups.append(group)
       group.instance = instance
       group_layout = QHBoxLayout()
       group.setLayout(group_layout)
@@ -218,16 +220,29 @@ class DefineInstances(MyWizardPage):
       self.instancesLayout.addWidget(group)
 
   def isComplete(self):
-    for instance in self.designspace.instances:
-      if not instance.name:
-        return False
-      if not instance.styleName:
-        return False
+    seenLocs = []
+    allOk = True
+    for ix,instance in enumerate(self.designspace.instances):
+      badName = False
+      if not instance.name or not instance.styleName:
+        badName = True
       if not instance.familyName:
         instance.familyName = self.designspace.sources[0].familyName
-      if not instance.familyName:
-        return False
-      if not instance.filename:
-        return False
-    return True
+      if not instance.familyName or not instance.filename:
+        badName = True
+      print("Seen locs:", seenLocs)
+      print("This instance location:", instance.location)
+      if instance.location in seenLocs:
+        allOk = False
+        self.groups[ix].name.setStyleSheet("background-color: #B00020")
+      else:
+        self.groups[ix].name.setStyleSheet("")
+        seenLocs.append(instance.location)
+      if badName:
+        allOk = False
+        print(ix, "is bad")
+        self.groups[ix].names.setStyleSheet("border-color: #B00020")
+      else:
+        self.groups[ix].names.setStyleSheet("")
+    return allOk
 
