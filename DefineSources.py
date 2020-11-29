@@ -13,7 +13,7 @@ class DragDropArea(QPushButton):
     def __init__(self, parent):
         super(DragDropArea, self).__init__()
         self.parent = parent
-        self.setText("Drop a font here or click to open")
+        self.setText("Drop a UFO file or click to open")
         self.setStyleSheet("border: 1px solid green")
         self.setAcceptDrops(True)
         self.clicked.connect(self.buttonClicked)
@@ -29,11 +29,11 @@ class DragDropArea(QPushButton):
 
     def buttonClicked(self):
         ufo = QFileDialog.getOpenFileNames(
-            self, "Open font file", filter="Font file (*.ufo)"
+            self, "Open UFO file", filter="UFO file (*.ufo)"
         )
         if not ufo:
             return
-        self.lastFiles = [ x for x in ufo if x != "Font file (*.ufo)" ]
+        self.lastFiles = [ x for x in ufo if x != "UFO file (*.ufo)" ]
         self.gotFiles.emit()
 
     def isAllFonts(self, mime):
