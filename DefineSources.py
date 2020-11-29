@@ -146,6 +146,8 @@ class DefineSources(MyWizardPage):
         m = re.search("-"+axis.tag+r"-?(\d+)", source.filename)
         if m:
           source.location[axis.name] = int(m[1]) # Possibly map here?
+        else:
+          source.location[axis.name] = axis.map_backward(axis.default)
       self.designspace.sources.append(source)
       self.setNames(source)
     self.initializePage()
