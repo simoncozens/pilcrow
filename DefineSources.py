@@ -142,10 +142,10 @@ class DefineSources(MyWizardPage):
         continue
       source.location = {}
 
-      for t in axis_tags:
-        m = re.search("-"+t+r"-?(\d+)", source.filename)
+      for axis in self.designspace.axes:
+        m = re.search("-"+axis.tag+r"-?(\d+)", source.filename)
         if m:
-          source.location[t] = int(m[1]) # Possibly map here?
+          source.location[axis.name] = int(m[1]) # Possibly map here?
       self.designspace.sources.append(source)
       self.setNames(source)
     self.initializePage()
