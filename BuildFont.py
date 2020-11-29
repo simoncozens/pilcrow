@@ -115,6 +115,7 @@ class BuildFont(MyWizardPage):
         worker_thread.started.connect(worker.start)
         worker.signalStatus.connect(self.show_results)
         if not self.spinner._isSpinning:
+            print("Start the spinner")
             self.spinner.start()
         self.buildlabel.show()
         worker_thread.start()
@@ -175,18 +176,18 @@ class BuildFont(MyWizardPage):
         self.designspace = self.parent.designspace
         self.saved = False
 
-        self.buildlabel = QLabel("Building...")
-        self.layout.addWidget(self.buildlabel)
-        self.buildlabel.hide()
-        self.spinner = QtWaitingSpinner(self)
-        self.layout.addWidget(self.spinner)
-
         self.optionsScroll = QScrollArea()
         self.layout.addWidget(self.optionsScroll)
         self.optionsWidget = QWidget()
         self.optionsScroll.setWidget(self.optionsWidget)
         self.optionsLayout = QVBoxLayout()
         self.optionsWidget.setLayout(self.optionsLayout)
+
+        self.buildlabel = QLabel("Building...")
+        self.layout.addWidget(self.buildlabel)
+        self.buildlabel.hide()
+        self.spinner = QtWaitingSpinner(self)
+        self.layout.addWidget(self.spinner)
 
         self.fontmake_args_variable = {"output_dir": None}
         self.fontmake_args_instances = {"output_dir": None}
