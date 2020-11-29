@@ -230,5 +230,4 @@ class DefineInstances(MyWizardPage):
       if not instance.filename:
         return False
     return True
-    return len(self.designspace.sources) > 1
 
