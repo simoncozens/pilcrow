@@ -81,6 +81,8 @@ class InstanceNameDialog(QDialog):
       self.nameManuallySet = True
 
 class DefineInstances(MyWizardPage):
+  disableEnter = True
+
   def __init__(self, parent=None):
     super(QWizardPage, self).__init__(parent)
     self.parent = parent

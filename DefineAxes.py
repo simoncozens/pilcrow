@@ -84,6 +84,7 @@ class Col(IntEnum):
   REMOVE = 7
 
 class DefineAxes(MyWizardPage):
+  disableEnter = True
 
   def __init__(self, parent=None):
     super(QWizardPage, self).__init__(parent)
@@ -97,6 +98,8 @@ class DefineAxes(MyWizardPage):
     self.axesWidget.setLayout(self.axesLayout)
     self.layout.addWidget(self.axesWidget)
     self.addButton = QPushButton("Add another")
+    self.addButton.setDefault(False)
+    self.addButton.setAutoDefault(False)
     self.addButton.clicked.connect(self.addRow)
     self.layout.addWidget(self.addButton)
 

@@ -54,6 +54,8 @@ class DragDropArea(QPushButton):
 
 
 class DefineSources(MyWizardPage):
+  disableEnter = True
+
   def __init__(self, parent=None):
     super(QWizardPage, self).__init__(parent)
     self.parent = parent
