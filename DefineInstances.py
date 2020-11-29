@@ -56,7 +56,8 @@ class InstanceNameDialog(QDialog):
     super().accept()
 
   def makeAFilename(self):
-    self.instance.filename = "%s-%s.ttf" % (self.instance.familyName, self.instance.styleName)
+    self.instance.filename = "%s-%s.ufo" % (self.instance.familyName, self.instance.styleName)
+    self.instance.filename.replace(" ", "-")
     self.formFields[2].blockSignals(True)
     self.formFields[2].setText(self.instance.filename)
     self.formFields[2].blockSignals(False)
