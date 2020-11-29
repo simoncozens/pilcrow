@@ -64,6 +64,8 @@ class MapEditor(QDialog):
         dsCoords = [ x[1] for x in self.axis.map ]
         self.ds_min.setValue(min(dsCoords))
         self.ds_max.setValue(max(dsCoords))
+        self.dx.setMinimum(min(dsCoords))
+        self.dx.setMaximum(max(dsCoords))
 
         self.layout.addWidget(self.top)
         self.layout.addWidget(self.bottom)
@@ -103,6 +105,8 @@ class MapEditor(QDialog):
             )
         self.axis.map[0] = (self.axis.map[0][0], newmin)
         self.axis.map[-1] = (self.axis.map[-1][0], newmax)
+        self.dx.setMinimum(newmin)
+        self.dx.setMaximum(newmax)
 
         self.bottom.fromMap()
         self.bottom.updateFigure()
