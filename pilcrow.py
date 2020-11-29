@@ -69,6 +69,7 @@ class FirstPage(MyWizardPage):
       self.parent.designspace = DesignSpaceDocument.fromfile(filename[0])
       print(self.parent.designspace)
     self.completeChanged.emit()
+    self.parent.next()
 
 
   def isComplete(self):
