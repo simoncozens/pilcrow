@@ -92,9 +92,12 @@ class DesignSpaceVisualizer(QWidget):
       fn = fn.replace("-","-\n")
       fn = fn.replace(" ","\n")
       z_shift = 1.0/10*(z_axis.maximum-z_axis.minimum)
-      self.ax.text(loc[x_axis.name], loc[y_axis.name], loc[z_axis.name]+z_shift, fn, None, wrap=True, size="x-small")
-      at.translate(Point(loc[x_axis.name],loc[z_axis.name]))
-      self.do_draw_glyph(a, at, z_loc=loc[y_axis.name])
+      xloc = x_axis.map_backward(loc[x_axis.name])
+      yloc = y_axis.map_backward(loc[y_axis.name])
+      zloc = z_axis.map_backward(loc[z_axis.name])
+      self.ax.text(xloc, yloc, zloc+z_shift, fn, None, wrap=True, size="x-small")
+      at.translate(Point(xloc,zloc))
+      self.do_draw_glyph(a, at, z_loc=yloc)
 
   def do_one_or_two_axis(self):
     x_axis = self.designspace.axes[0]
