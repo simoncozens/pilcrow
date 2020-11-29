@@ -129,24 +129,43 @@ class DefineAxes(MyWizardPage):
     print("Row removed")
     self.parent.dirty = True
 
-  def setDefaultValues(self, ix):
+  def setDefaultValuesByName(self, ix):
     axis = self.designspace.axes[ix]
     name = axis.name.lower().strip()
     if name in registeredAxes.keys():
       axisDefaults = registeredAxes[name]
       axis.tag = axisDefaults["tag"]
+      self.getWidget(ix, Col.TAG).blockSignals(True)
+      self.getWidget(ix, Col.TAG).setText(axis.tag)
+      self.getWidget(ix, Col.TAG).blockSignals(False)
+      self.setDefaultValues(ix, axisDefaults)
+    elif not axis.tag or len(axis.tag) < 4:
+      axis.tag = self.suggestTag(axis)
+      self.getWidget(ix, Col.TAG).setText(axis.tag)
+
+  def setDefaultValuesByTag(self, ix):
+    axis = self.designspace.axes[ix]
+    tag = axis.tag
+    for name, axisDefaults in registeredAxes.items():
+      if tag != axisDefaults["tag"]:
+        continue
+      axis.name = name
+      self.getWidget(ix, Col.NAME).blockSignals(True)
+      self.getWidget(ix, Col.NAME).setText(name)
+      self.getWidget(ix, Col.NAME).blockSignals(False)
+      self.setDefaultValues(ix, axisDefaults)
+      break
+
+  def setDefaultValues(self, ix, axisDefaults):
+      axis = self.designspace.axes[ix]
       axis.minimum = axisDefaults["min"]
       axis.maximum = axisDefaults["max"]
       axis.default = axisDefaults["default"]
       axis.hidden = axisDefaults["hidden"]
-      self.getWidget(ix, Col.TAG).setText(axis.tag)
       self.getWidget(ix, Col.MIN).setValue(axis.minimum)
       self.getWidget(ix, Col.MAX).setValue(axis.maximum)
       self.getWidget(ix, Col.DEFAULT).setValue(axis.default)
       self.getWidget(ix, Col.VISIBLE).setChecked(not axis.hidden)
-    elif not axis.tag or len(axis.tag) < 4:
-      axis.tag = self.suggestTag(axis)
-      self.getWidget(ix, Col.TAG).setText(axis.tag)
 
   def suggestTag(self, axis):
     name = axis.name.upper().replace(" ", '')
@@ -158,16 +177,17 @@ class DefineAxes(MyWizardPage):
     axis = self.designspace.axes[ix]
     print("Name set")
     axis.name = self.sender().text()
-    self.setDefaultValues(ix)
+    self.setDefaultValuesByName(ix)
     self.completeChanged.emit()
     self.parent.dirty = True
 
   @pyqtSlot()
   def setTag(self):
+    ix = self.sender().ix
     print("Tag set")
-    axis = self.designspace.axes[self.sender().ix]
-    state = self.sender().validator().validate(self.sender().text(), 0)[0]
+    axis = self.designspace.axes[ix]
     axis.tag = self.sender().text()
+    self.setDefaultValuesByTag(ix)
     self.parent.dirty = True
     self.completeChanged.emit()
 
@@ -180,10 +200,10 @@ class DefineAxes(MyWizardPage):
     ix = self.sender().ix
     axis = self.designspace.axes[ix]
     axis.minimum = float(self.sender().value())
-    self.getWidget(ix, Col.MAX).setMinimum(axis.minimum)
-    self.getWidget(ix, Col.DEFAULT).setMinimum(axis.minimum)
+    # self.getWidget(ix, Col.DEFAULT).setMinimum(axis.minimum)
     print(axis.serialize())
     self.completeChanged.emit()
+    self.updateMap(axis)
     self.parent.dirty = True
 
   @pyqtSlot()
@@ -193,10 +213,10 @@ class DefineAxes(MyWizardPage):
     axis = self.designspace.axes[ix]
     print(axis.serialize())
     axis.maximum = float(self.sender().value())
-    self.getWidget(ix, Col.MIN).setMaximum(axis.maximum)
-    self.getWidget(ix, Col.DEFAULT).setMaximum(axis.maximum)
+    # self.getWidget(ix, Col.DEFAULT).setMaximum(axis.maximum)
     print(axis.serialize())
     self.completeChanged.emit()
+    self.updateMap(axis)
     self.parent.dirty = True
 
   @pyqtSlot()
@@ -220,6 +240,15 @@ class DefineAxes(MyWizardPage):
   def showMap(self):
     axis = self.designspace.axes[self.sender().ix]
     MapEditor(self, axis).exec_()
+
+  def updateMap(self, axis):
+    if not axis.map:
+      return
+    bottom, top = axis.map[0], axis.map[-1]
+    if bottom[0] != axis.minimum:
+      axis.map[0] = (axis.minimum, bottom[1])
+    if top[0] != axis.maximum:
+      axis.map[-1] = (axis.maximum, top[1])
 
   def _createFixedWidthLabel(self, text, width, tooltip=None):
     w = QLabel(text)
@@ -275,10 +304,10 @@ class DefineAxes(MyWizardPage):
       default = QSpinBox()
       default.ix = ix
       default.setToolTip(defaultToolTip)
-      if ax.minimum is not None:
-        default.setMinimum(ax.minimum)
-      if ax.maximum is not None:
-        default.setMaximum(ax.maximum)
+      # if ax.minimum is not None:
+      #   default.setMinimum(ax.minimum)
+      # if ax.maximum is not None:
+      #   default.setMaximum(ax.maximum)
       if ax.default is not None:
         default.setValue(ax.default)
       default.valueChanged.connect(self.setDefault)
@@ -358,6 +387,6 @@ class DefineAxes(MyWizardPage):
         defaultW.setStyleSheet("border-color: #B00020")
         firstError = firstError or defaultW
       else:
-        minW.setStyleSheet("")
+        defaultW.setStyleSheet("")
     return not firstError
 
