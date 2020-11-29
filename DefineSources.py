@@ -80,7 +80,7 @@ class DefineSources(MyWizardPage):
     self.sourcesWidget = QWidget()
     self.sourcesScroll.setWidget(self.sourcesWidget)
     self.sourcesScroll.setWidgetResizable(True)
-    self.sourcesLayout = QVBoxLayout()
+    self.sourcesLayout = QGridLayout()
     self.sourcesWidget.setLayout(self.sourcesLayout)
     self.left_layout.addWidget(self.sourcesScroll)
 
@@ -169,32 +169,24 @@ class DefineSources(MyWizardPage):
 
   def setupSources(self):
     self._clearLayout(self.sourcesLayout)
-    headergroup = QWidget()
-    headergroup_layout = QHBoxLayout()
-    headergroup.setLayout(headergroup_layout)
-    headergroup_layout.addWidget(QLabel("Source"))
-    for ax in self.designspace.axes:
+    self.sourcesLayout.addWidget(QLabel("Source"), 0, 0)
+    for ix,ax in enumerate(self.designspace.axes):
       axlabel = QLabel(ax.name)
       axlabel.setToolTip("<i>%s</i> value for this source in designspace coordinates" % ax.tag)
-      headergroup_layout.addWidget(axlabel)
-    headergroup_layout.addWidget(QLabel("Remove"))
-    self.sourcesLayout.addWidget(headergroup)
+      self.sourcesLayout.addWidget(axlabel, 0, 1+ix)
+    self.sourcesLayout.addWidget(QLabel("Remove"), 0, 1+len(self.designspace.axes))
 
     for ix,source in enumerate(self.designspace.sources):
       if not source.location:
         source.location = {}
-      group = QWidget()
-      group.source = source
-      group_layout = QHBoxLayout()
-      group.setLayout(group_layout)
 
-      group.filename = QLabel()
+      filename = QLabel()
       if source.filename:
-        group.filename.setText(source.filename)
-      group.filename.setWordWrap(True)
-      group_layout.addWidget(group.filename)
+        filename.setText(source.filename)
+      filename.setWordWrap(True)
+      self.sourcesLayout.addWidget(filename,ix+1,0)
 
-      for ax in self.designspace.axes:
+      for col,ax in enumerate(self.designspace.axes):
         tag = ax.tag
         name = ax.name
         loc = QSpinBox()
@@ -202,6 +194,11 @@ class DefineSources(MyWizardPage):
         loc.name = ax.name
         loc.source = source
         loc.setToolTip("<i>%s</i> value for this source in designspace coordinates" % ax.tag)
+        if not ax.map:
+          ax.map = [(ax.minimum, ax.minimum), (ax.maximum, ax.maximum)]
+          print("%s had no map, here it is:" % ax.tag, ax.map)
+
+        print(ax.map)
         dsCoords = [ x[1] for x in ax.map ]
         loc.setMinimum(min(dsCoords))
         loc.setMaximum(max(dsCoords))
@@ -210,18 +207,18 @@ class DefineSources(MyWizardPage):
         else:
           loc.setValue(ax.default)
         loc.valueChanged.connect(self.locationChanged)
-        group_layout.addWidget(loc)
+        self.sourcesLayout.addWidget(loc, ix+1, col+1)
 
       removeButton = QPushButton("Remove")
       removeButton.ix = ix
-      group_layout.addWidget(removeButton)
       removeButton.clicked.connect(self.removeRow)
-      self.sourcesLayout.addWidget(group)
+      self.sourcesLayout.addWidget(removeButton, ix+1, len(self.designspace.axes)+1)
 
 
   def isComplete(self):
     if len(self.designspace.sources) < 2:
       return False
+    # Uniqueness check
+
     return True
-    # Any other checks here?
 

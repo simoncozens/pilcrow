@@ -357,8 +357,6 @@ class DefineAxes(MyWizardPage):
     firstError = None
     # Validate whole form
     for ix,axis in enumerate(self.designspace.axes):
-      if not axis.map:
-        axis.map = [(axis.minimum, axis.minimum), (axis.maximum, axis.maximum)]
 
       nameW = self.getWidget(ix,Col.NAME)
       if not axis.name:
