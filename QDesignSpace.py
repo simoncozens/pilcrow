@@ -84,7 +84,6 @@ class DesignSpaceVisualizer(QWidget):
           (x_axis.maximum-x_axis.minimum)/10000,
           (z_axis.maximum-z_axis.minimum)/10000,
           )
-      a = source.font[self.draw_glyph]
       if styles_are_unique:
         fn = source.styleName
       else:
@@ -97,7 +96,9 @@ class DesignSpaceVisualizer(QWidget):
       zloc = z_axis.map_backward(loc[z_axis.name])
       self.ax.text(xloc, yloc, zloc+z_shift, fn, None, wrap=True, size="x-small")
       at.translate(Point(xloc,zloc))
-      self.do_draw_glyph(a, at, z_loc=yloc)
+      if self.draw_glyph in source.font:
+        a = source.font[self.draw_glyph]
+        self.do_draw_glyph(a, at, z_loc=yloc)
 
   def do_one_or_two_axis(self):
     x_axis = self.designspace.axes[0]
@@ -114,7 +115,6 @@ class DesignSpaceVisualizer(QWidget):
       loc = source.location
       if x_axis.name not in loc:
         continue
-      a = source.font[self.draw_glyph]
       if styles_are_unique:
         fn = source.styleName
       else:
@@ -132,7 +132,9 @@ class DesignSpaceVisualizer(QWidget):
       # print(fn, xloc, yloc)
       self.ax.text(xloc, yloc+y_shift, fn, None, wrap=True, size="x-small")
       at.translate(Point(xloc,yloc))
-      self.do_draw_glyph(a, at)
+      if self.draw_glyph in source.font:
+        a = source.font[self.draw_glyph]
+        self.do_draw_glyph(a, at)
 
   def do_draw_glyph(self, glyph, transformation, z_loc=None):
       paths = self.glyph_to_paths(glyph)
