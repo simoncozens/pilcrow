@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from MyWizardPage import MyWizardPage
-from pyqt5_material import apply_stylesheet
+from qt_material import apply_stylesheet
 from DefineAxes import DefineAxes
 from DefineSources import DefineSources
 from DefineInstances import DefineInstances

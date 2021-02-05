@@ -1,5 +1,5 @@
 PyQt5
-pyqt5_material
+qt-material
 jinja2
 matplotlib==3.0.3
 beziers
