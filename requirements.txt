@@ -9,3 +9,4 @@ defcon
 qcrash
 fs >= 2.2.0, < 3
 munkres
+cffsubr

@@ -11,7 +11,7 @@ APP = ['pilcrow.py']
 DATA_FILES = []
 OPTIONS = {
 		'iconfile': 'logo.icns',
-    'packages': ["PyQt5", "qt_material", "cffsubr","jinja2", "PIL"],
+    'packages': ["PyQt5", "qt_material", "cffsubr","jinja2", "PIL", "cffsubr"],
 'plist': {
         'CFBundleIdentifier': 'uk.co.corvelsoftware.Pilcrow',
     }
