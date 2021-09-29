@@ -3,7 +3,7 @@ qt-material
 jinja2
 matplotlib==3.0.3
 beziers
-git+git://github.com/fonttools/fonttools.git#egg=fonttools
+fonttools
 fontmake
 defcon
 qcrash
